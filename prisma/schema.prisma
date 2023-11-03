@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  adminID             String     @id @default(uuid())
+  adminName           String
+  adminEmail          String
+  rootUser            Boolean
+  adminProfilePicture String
+  articles            Articles[]
+}
+
+model Batches {
+  batchID      String @id @default(uuid())
+  academicYear String
+  course       String
+  batchName    String
+  studentsID   User[]
+  //  @relation(fields: [studentsID], references: [userID])
+}
+
+model Articles {
+  articleID String   @id @default(uuid())
+  title     String
+  content   String
+  category  String[]
+  metatags  String[]
+  date      DateTime @default(now())
+  admin     Admin    @relation(fields: [createdBy], references: [adminID])
+  createdBy String
+  documents String[]
+}
+
+model User {
+  userID             String    @id @default(uuid())
+  userName           String
+  userEmail          String
+  userProfilePicture String
+  userPhoneNo        String
+  isStudent          Boolean?
+  batchID            Batches[]
+  
+}
