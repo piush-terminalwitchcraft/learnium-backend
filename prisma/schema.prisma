@@ -13,9 +13,10 @@ datasource db {
 model Admin {
   adminID             String     @id @default(uuid())
   adminName           String
-  adminEmail          String
+  adminEmail          String     @unique
+  adminPassword       String
   rootUser            Boolean
-  adminProfilePicture String
+  adminProfilePicture String?
   articles            Articles[]
 }
 
@@ -26,6 +27,19 @@ model Batches {
   batchName    String
   studentsID   User[]
   //  @relation(fields: [studentsID], references: [userID])
+  Exam         Exam[]
+}
+
+model Exam {
+  examID    String   @id @default(uuid())
+  examName  String
+  subject   String[]
+  marks     String[]
+  examDate  DateTime
+  student   User     @relation(fields: [studentID], references: [userID])
+  studentID String
+  batch     Batches  @relation(fields: [batchID], references: [batchID])
+  batchID   String
 }
 
 model Articles {
@@ -43,10 +57,11 @@ model Articles {
 model User {
   userID             String    @id @default(uuid())
   userName           String
-  userEmail          String
+  userEmail          String    @unique
   userProfilePicture String
   userPhoneNo        String
   isStudent          Boolean?
   batchID            Batches[]
-  
+
+  Exam Exam[]
 }
