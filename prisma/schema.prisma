@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -17,10 +18,12 @@ model Admin {
   adminPassword       String
   rootUser            Boolean
   adminProfilePicture String?
-  articles            Articles[]
+  articles            Article[]
+
+  @@map("admins")
 }
 
-model Batches {
+model Batch {
   batchID      String @id @default(uuid())
   academicYear String
   course       String
@@ -28,6 +31,8 @@ model Batches {
   studentsID   User[]
   //  @relation(fields: [studentsID], references: [userID])
   Exam         Exam[]
+  @@map("batches")
+
 }
 
 model Exam {
@@ -38,20 +43,44 @@ model Exam {
   examDate  DateTime
   student   User     @relation(fields: [studentID], references: [userID])
   studentID String
-  batch     Batches  @relation(fields: [batchID], references: [batchID])
+  batch     Batch  @relation(fields: [batchID], references: [batchID])
   batchID   String
+
+  @@map("exams")
+
 }
 
-model Articles {
+model Category {
+  categoryID String   @id @default(uuid())
+  categoryName String  @unique
+  articles   Article[]
+}
+
+model Metatag {
+  metatagID  String   @id @default(uuid())
+  metatagName String  @unique
+  articles   Article[]
+}
+
+model Document {
+  documentID   String   @id @default(uuid())
+  documentName String
+  documentPath String
+  articles   Article[]
+}
+
+model Article {
   articleID String   @id @default(uuid())
   title     String
   content   String
-  category  String[]
-  metatags  String[]
+  category  Category[]
+  metatags  Metatag[]
   date      DateTime @default(now())
   admin     Admin    @relation(fields: [createdBy], references: [adminID])
   createdBy String
-  documents String[]
+  documents Document[]
+
+  @@map("articles")
 }
 
 model User {
@@ -61,7 +90,9 @@ model User {
   userProfilePicture String
   userPhoneNo        String
   isStudent          Boolean?
-  batchID            Batches[]
+  batchID            Batch[]
 
   Exam Exam[]
+
+  @@map("users")
 }
