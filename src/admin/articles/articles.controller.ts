@@ -10,13 +10,13 @@ export class ArticlesController {
 
   constructor(private articleService: ArticlesService){}
   @Post('add')
-  addArticles( @GetUser('adminEmail') adminEmail: string, @Body() dto: NewArticleDto){
-    return this.articleService.addArticles(adminEmail,dto);
+  addArticles( @GetUser('sub') adminID: string, @Body() dto: NewArticleDto){
+    return this.articleService.addArticles(adminID,dto);
   }
 
   @Patch('update')
-  updateArticles(@GetUser('adminEmail') adminEmail: string,  @Body() dto: UpdateArticleDto){
-    return this.articleService.updateArticles(adminEmail,dto); 
+  updateArticles(@GetUser('sub') adminID: string,  @Body() dto: UpdateArticleDto){
+    return this.articleService.updateArticles(adminID,dto); 
   }
 
   @Get('search')

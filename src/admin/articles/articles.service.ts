@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { DeleteArticleDto, NewArticleDto, SearchArticleDto, UpdateArticleDto } from './dto';
+import { DeleteArticleDto, Document, NewArticleDto, SearchArticleDto, UpdateArticleDto } from './dto';
 
 @Injectable()
 export class ArticlesService {
@@ -46,15 +46,135 @@ export class ArticlesService {
   }
 
   // find documents if doesnt exist create one and return
-  async findOrCreateDocuments(document: string) {
+  async findOrCreateDocuments(document: Document) {
     try {
-      const res = await this.prisma.document.upsert({
+      // find if document exists 
+      const res = await this.prisma.document.findMany({
         where: {
-          documentPath: document
+          documentPath: document.documentPath,
+          documentName: document.documentName
+        }
+      });
+
+      // if document doesnt exist create one and return
+      if (res.length === 0) {
+        const res = await this.prisma.document.create({
+          data: {
+            documentPath: document.documentPath,
+            documentName: document.documentName
+          }
+        });
+
+        return res;
+      } else {
+        return res[0];
+      } 
+
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async addArticles(adminID: string, dto: NewArticleDto) {
+    const { title, content, category, metatags, documents } = dto;
+
+    // get tuple of each category
+    const categoryTuple = await Promise.all(category.map(async (category) => {
+      return await this.findOrCreateCategory(category);
+    }));
+
+    // get tuple of each metatag
+    const metatagTuple = await Promise.all(metatags.map(async (metatag) => {
+      return await this.findOrCreateMetatags(metatag);
+    }));
+
+    // get tuple of each document
+    const documentTuple = await Promise.all(documents.map(async (document) => {
+      return await this.findOrCreateDocuments(document);
+    }));
+
+    // create article
+    try {
+      const res = await this.prisma.article.create({
+        data: {
+          title,
+          content,
+          admin: {
+            connect: {
+              adminID: adminID,
+            }
+          },
+          category: {
+            connect: categoryTuple
+          },
+          metatags: {
+            connect: metatagTuple
+          },
+          documents: {
+            connect: documentTuple
+          }
+        }
+      });
+
+      return res;
+    } catch (error) {
+      throw error;
+    }
+
+  }
+
+  async updateArticles(adminID: string, dto: UpdateArticleDto) {
+
+    const { articleID, content, category, metatags, documents } = dto;
+    console.log(dto);
+     // get tuple of each category
+     const categoryTuple = await Promise.all(category.map(async (category) => {
+      return await this.findOrCreateCategory(category);
+    }));
+
+    // get tuple of each metatag
+    const metatagTuple = await Promise.all(metatags.map(async (metatag) => {
+      return await this.findOrCreateMetatags(metatag);
+    }));
+
+    // get tuple of each document
+    const documentTuple = await Promise.all(documents.map(async (document) => {
+      return await this.findOrCreateDocuments(document);
+    }));
+
+    try {
+      const res = this.prisma.article.update({
+        where: {
+          articleID
         },
-        update: {},
-        create:{
-          documentPath: document,
+        data: {
+          content,
+          category: {
+            set: categoryTuple
+          },
+          metatags: {
+            set: metatagTuple
+          },
+          documents: {
+            set: documentTuple
+          }
+        }
+      });
+
+      return res;
+    } catch (error) {
+      throw error;
+    }
+
+  }
+
+  deleteArticles(adminEmail: string, dto: DeleteArticleDto) { 
+    const { articleID } = dto;
+
+    try {
+      const res = this.prisma.article.delete({
+        where: {
+          articleID
         }
       });
 
@@ -64,26 +184,22 @@ export class ArticlesService {
     }
   }
 
-  async addArticles(adminEmail: string, dto: NewArticleDto) {
-    const { title, content, category, metatags, createdBy, documents } = dto;
-
-  }
-
-  updateArticles(adminEmail: string, dto: UpdateArticleDto) { }
-
-  deleteArticles(adminEmail: string, dto: DeleteArticleDto) { }
-
+  // TODO: implement search  
   async searchArticles(dto: SearchArticleDto) {
     const { query } = dto;
 
+    console.log(query);
     try {
       const res = await this.prisma.article.findMany({
         where: {
           content: {
             search: query,
-          }
+          }, 
+
         }
       });
+
+      console.log(res);
 
       return res;
     } catch (error) {

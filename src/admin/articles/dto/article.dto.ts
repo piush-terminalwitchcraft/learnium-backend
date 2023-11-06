@@ -1,5 +1,10 @@
 import { IsArray, IsNotEmpty, IsString } from "class-validator"
 
+export class Document {
+  documentPath: string;
+  documentName: string;
+}
+
 export class NewArticleDto {
   
   @IsString()
@@ -14,13 +19,10 @@ export class NewArticleDto {
   category: string[]; 
 
   @IsArray()
-  metatags: string[]; 
-
-  @IsString()
-  createdBy: string;
+  metatags: string[];
 
   @IsArray()
-  documents: string[];
+  documents: Document[];
 
 }
 
@@ -30,8 +32,8 @@ export class UpdateArticleDto {
   @IsNotEmpty()
   articleID: string;
 
-  title: string;
-
+  @IsString()
+  @IsNotEmpty()
   content: string;
 
   @IsArray()
@@ -40,11 +42,8 @@ export class UpdateArticleDto {
   @IsArray()
   metatags: string[]; 
 
-  @IsString()
-  createdBy: string;
-
   @IsArray()
-  documents: string[];
+  documents: Document[];
 
 }
 
