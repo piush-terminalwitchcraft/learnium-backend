@@ -95,3 +95,9 @@ ALTER TABLE "_ArticleToDocument" ADD CONSTRAINT "_ArticleToDocument_A_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "_ArticleToDocument" ADD CONSTRAINT "_ArticleToDocument_B_fkey" FOREIGN KEY ("B") REFERENCES "Document"("documentID") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- CREATE INDEX article_content_fts_idx ON articles USING gin(to_tsvector('english', content));
+
+-- CREATE INDEX article_title_fts_idx ON articles USING gin(to_tsvector('english', title));
+
+
