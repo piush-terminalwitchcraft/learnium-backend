@@ -35,11 +35,21 @@ model Batch {
 
 }
 
+model SubjectScore {
+  subjectScoreID String   @id @default(uuid())
+  subjectName    String
+  subjectScore   Int
+  totalScore     Int
+  exam           Exam     @relation(fields: [examID], references: [examID])
+  examID         String
+
+  @@map("subjectScores")
+}
+
 model Exam {
   examID    String   @id @default(uuid())
   examName  String
-  subject   String[]
-  marks     String[]
+  score     SubjectScore[]
   examDate  DateTime
   student   User     @relation(fields: [studentID], references: [userID])
   studentID String
@@ -87,8 +97,9 @@ model User {
   userID             String    @id @default(uuid())
   userName           String
   userEmail          String    @unique
+  userPassword       String
   userProfilePicture String
-  userPhoneNo        String
+  userPhoneNo        String?
   isStudent          Boolean?
   batchID            Batch[]
 

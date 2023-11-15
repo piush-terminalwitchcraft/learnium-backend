@@ -18,18 +18,21 @@ export class AuthService {
       // generate the password hash 
       const hash = await  argon.hash(dto.password); 
       // save the user in Db 
-      const user = await this.prisma.admin.create({
-        data: {
-          adminEmail: dto.email,
-          adminName: dto.name, 
-          adminPassword: hash, 
-          rootUser: false,
-
+      const user = await this.prisma.user.create(
+        {
+          data: {
+            userEmail: dto.email,
+            userName: dto.name, 
+            userPassword: hash, 
+            userProfilePicture: '',
+            userPhoneNo: '',
+            isStudent: false,
+          }
         }
-      })
+      )
 
       // return the saved user 
-      return this.signToken(user.adminID, user.adminEmail, user.rootUser);
+      return this.signToken(user.userID, user.userEmail, user.isStudent);
     } catch (error){
       if( error instanceof PrismaClientKnownRequestError) {
         if(error.code === 'P2002'){
@@ -45,29 +48,30 @@ export class AuthService {
   async signin(dto: LoginDto){
     try{
       // find user by email 
-      const user = await this.prisma.admin.findUnique({
+      const user = await this.prisma.user.findUnique({
         where:{
-          adminEmail: dto.email,
+          userEmail: dto.email,
         }
       }); 
 
       if(!user) throw new ForbiddenException("Credentials incorrect")
 
       // compare password 
-      const passwordMatches = await argon.verify(user.adminPassword, dto.password); 
+      const passwordMatches = await argon.verify(user.userPassword, dto.password); 
 
       if(!passwordMatches) throw new ForbiddenException("Credentials incorrect")
 
-      return this.signToken(user.adminID, user.adminEmail, user.rootUser);
+      return this.signToken(user.userID, user.userEmail, user.isStudent);
     } catch(error) {
       throw error; 
     }
   }
 
-  async signToken(adminID: string, adminEmail: string, rootUser: boolean): Promise<{access_token:string}>{
+  async signToken(userID: string, userEmail: string, isStudent: boolean): Promise<{access_token:string}>{
     const payload = {
-      sub: adminID, 
-      adminEmail, rootUser
+      sub: userID,
+      userEmail,
+      isStudent
     }
     
     const secret = this.config.get('JWT_SECRET');
