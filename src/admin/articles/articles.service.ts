@@ -184,22 +184,52 @@ export class ArticlesService {
     }
   }
 
+  // get article detail 
+  async getArticle(email: string, dto: DeleteArticleDto) {
+    const {articleID} = dto; 
+    try {
+      const res = await this.prisma.article.findUnique({
+        where: {
+          articleID: articleID,
+        },
+        include: {
+          category: true,
+          metatags: true,
+          documents: true
+        }
+      })
+
+      return res; 
+    } catch (error) {
+      throw error; 
+    }
+  }
+
   // TODO: implement search  
   async searchArticles(dto: SearchArticleDto) {
     const { query } = dto;
 
-    console.log(query);
+    console.log(query, " query");
     try {
-      const res = await this.prisma.article.findMany({
-        where: {
-          content: {
-            search: query,
-          }, 
-
-        }
-      });
-
-      console.log(res);
+      var res; 
+      if(query.length !== 0){
+        res = await this.prisma.article.findMany({
+          where: {
+            content: {
+              search: query,
+            }, 
+          },
+          include: {
+            category: true,
+          }
+        });
+      } else {
+        res = await this.prisma.article.findMany({
+          include:{
+            category: true,
+          }
+        });
+      }
 
       return res;
     } catch (error) {

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { ArticlesService } from './articles.service';
 import { DeleteArticleDto, NewArticleDto, SearchArticleDto, UpdateArticleDto } from './dto';
@@ -20,8 +20,9 @@ export class ArticlesController {
   }
 
   @Get('search')
-  searchArticles(@Body() dto: SearchArticleDto){
-    return this.articleService.searchArticles(dto);
+  searchArticles(@Query('query') query: string){
+    console.log("Query => ", query)
+    return this.articleService.searchArticles({query});
   }
 
   @Delete('delete')
@@ -30,4 +31,9 @@ export class ArticlesController {
     return this.articleService.deleteArticles(adminEmail,dto);
   }
 
+  @Get('detail')
+  getArticles(@GetUser() user: any, @Query('articleID') articleID: string){
+    const {adminEmail} = user; 
+    return this.articleService.getArticle(adminEmail,{articleID}); 
+  }
 }

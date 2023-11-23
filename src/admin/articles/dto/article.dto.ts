@@ -54,7 +54,6 @@ export class DeleteArticleDto {
 }
 
 export class SearchArticleDto {
-  @IsNotEmpty()
   @IsString()
   query: string;
 }
