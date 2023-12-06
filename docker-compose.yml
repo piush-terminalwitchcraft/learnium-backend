@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   dev-db:
-    image: postgres:13
+    image: postgres:alpine
     ports:
       - 5434:5432
     environment:
@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: nest 
     networks:
         - learnium
+    volumes:
+      - ./data:/var/lib/postgresql/data
 
 networks:
   learnium:

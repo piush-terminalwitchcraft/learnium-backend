@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { ClassroomService } from './classroom.service';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
+import { addBatchDto, removeBatchDto } from './dto/batch.dto';
 
 @UseGuards(JwtGuard)
 @Controller('admin/classroom')
@@ -10,12 +11,12 @@ export class ClassroomController {
     constructor(private classroomService: ClassroomService) {}
 
     @Post ('addbatch')
-    addBatch(@GetUser('sub') adminID: string  ,@Body() dto: any) {
+    addBatch(@GetUser('sub') adminID: string  ,@Body() dto: addBatchDto) {
         return this.classroomService.addClassroom(adminID,dto);
     }
 
-    @Post ('removebatch')
-    removeBatch(@GetUser('sub') adminID: string  ,@Body() dto: any) {
+    @Delete ('removebatch')
+    removeBatch(@GetUser('sub') adminID: string  ,@Body() dto: removeBatchDto) {
         return this.classroomService.removeClassroom(adminID,dto);
     }
 
@@ -34,10 +35,9 @@ export class ClassroomController {
         return this.classroomService.addStudent(adminID,dto);
     }
 
-    @Post ('removestudent')
+    @Delete ('removestudent')
     removeStudent(@GetUser('sub') adminID: string  ,@Body() dto: any) {
         return this.classroomService.removeStudent(adminID,dto);
     }
-
 
 }
