@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { addBatchDto, batchStudentDto, removeBatchDto } from './dto/batch.dto';
+import { addBatchDto, batchStudentDto, removeBatchDto, addExamResultDto, delExamResultDto, getBatchDto } from './dto/batch.dto';
+import { SubjectScore } from '@prisma/client';
 
 @Injectable()
 export class ClassroomService {
 
   constructor(private prisma: PrismaService) { }
 
-  async getClassrooms(adminID: string) {
+  async getClassrooms(_: string) {
     try {
       const classrooms = await this.prisma.batch.findMany();
       return classrooms;
@@ -16,7 +17,42 @@ export class ClassroomService {
     }
   }
 
-  async addClassroom(adminID: string, dto: addBatchDto) {
+  async getClassroomDetails(_: string, dto: getBatchDto) {
+    try {
+      const batchdetails = await this.prisma.batch.findUnique({
+        where: {
+          batchID: dto.batchID,
+        },
+        include: {
+          studentsID: {
+            select: {
+              userID: true,
+              userEmail: true,
+              userName: true, 
+              userProfilePicture: true,
+              userPhoneNo: true,
+              isStudent: true,
+            }
+          }
+        }
+      })
+
+      const exams = await this.prisma.exam.groupBy({
+        by:['examName','examDate'],
+        where: {
+          batchID: dto.batchID,
+        },
+        _count: true, 
+      })
+    
+      const res = {batchdetails, exams}
+      return res;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async addClassroom(_: string, dto: addBatchDto) {
     try {
       const batch = await this.prisma.batch.create({
         data: {
@@ -32,7 +68,7 @@ export class ClassroomService {
     }
   }
 
-  async removeClassroom(adminID: string, dto: removeBatchDto) {
+  async removeClassroom(_: string, dto: removeBatchDto) {
     try {
       const res = await this.prisma.batch.delete({
         where: {
@@ -46,11 +82,74 @@ export class ClassroomService {
     }
   }
 
-  async addExamResult(adminID: string, dto: any) {
+  async addScores(scores: SubjectScore[], examID: string){
     try {
+      scores.map(async (score)=>{
+        await this.prisma.subjectScore.create({
+          data:{
+            subjectScore: score.subjectScore,
+            subjectName: score.subjectName,
+            totalScore: score.totalScore,
+            exam: {
+              connect: {
+                examID: score.examID
+              }
+            }
+          }
+        }) 
+      })
+    } catch (error) {
+      
+    }
+  }
 
+  async addExamResult(_: string , dto: addExamResultDto[]) {
+    try {
+      dto.map(async (val)=>{
+        const res = await this.prisma.exam.create({
+          data:{
+            examName: val.examName,
+            examDate: "2023-12-06T11:29:19.036Z",
+            student: {
+              connect: {
+                userEmail: val.studentEmailID,
+              }
+            },
+            batch: {
+              connect:{
+                batchID: val.batchID, 
+              }
+            },
+          }
+        })
+        
+        val.subjectScores.map(async (score)=>{
+            await this.prisma.subjectScore.create({
+              data: {
+              subjectName: score.subjectName,
+              subjectScore: score.subjectScore,
+              totalScore: score.totalScore,
+              exam: {
+                connect: {
+                  examID: res.examID
+                }
+              } 
+            }
+          })
+        })
+
+      })
+      return {msg: "Successfully created"};
     } catch (error) {
       throw error;
+    }
+  }
+
+  async delExamResult(adminID: string, dto: any){
+    try {
+        
+    } catch (error) {
+      
     }
   }
 
@@ -103,7 +202,7 @@ export class ClassroomService {
 
   async removeStudent(adminID: string, dto: batchStudentDto) {
     try {
-           // disconnect the user from that batch 
+      // disconnect the user from that batch 
       const res = await this.prisma.batch.update({
         where:{
           batchID: dto.batchID
@@ -149,9 +248,6 @@ export class ClassroomService {
       throw error;
     }
   }
-
-
-
 
 }
 

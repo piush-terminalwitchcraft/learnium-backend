@@ -15,6 +15,7 @@ export class addBatchDto{
   batchName: string;
 
 }  
+
 export class removeBatchDto{
 
   @IsNotEmpty()
@@ -28,6 +29,23 @@ export class getBatchDto{
   @IsString()
   batchID: string;
 }
+
+export class subjectScore {
+  subjectName: string;
+  subjectScore: number ;
+  totalScore: number;
+}
+
+export class addExamResultDto{
+  examName: string;
+  batchID: string;
+  studentEmailID: string;
+  subjectScores: subjectScore[];
+}
+
+export class delExamResultDto {
+  
+} 
 
 export class batchStudentDto{
   @IsNotEmpty()

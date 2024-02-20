@@ -6,6 +6,7 @@ generator client {
   previewFeatures = ["fullTextSearch"]
 }
 
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -44,6 +45,7 @@ model SubjectScore {
   examID         String
 
   @@map("subjectScores")
+
 }
 
 model Exam {
@@ -61,22 +63,22 @@ model Exam {
 }
 
 model Category {
-  categoryID String   @id @default(uuid())
+  categoryID   String   @id @default(uuid())
   categoryName String  @unique
-  articles   Article[]
+  articles     Article[]
 }
 
 model Metatag {
-  metatagID  String   @id @default(uuid())
+  metatagID   String   @id @default(uuid())
   metatagName String  @unique
-  articles   Article[]
+  articles    Article[]
 }
 
 model Document {
   documentID   String   @id @default(uuid())
   documentName String
   documentPath String
-  articles   Article[]
+  articles     Article[]
 }
 
 model Article {
@@ -89,7 +91,6 @@ model Article {
   admin     Admin    @relation(fields: [createdBy], references: [adminID])
   createdBy String
   documents Document[]
-
   @@map("articles")
 }
 
@@ -102,8 +103,6 @@ model User {
   userPhoneNo        String?
   isStudent          Boolean?
   batchID            Batch[]
-
-  Exam Exam[]
-
+  Exam               Exam[]
   @@map("users")
 }
